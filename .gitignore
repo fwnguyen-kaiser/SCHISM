@@ -1,0 +1,35 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Runtime data — never commit raw pulls or processed artifacts
+schism/data/raw/*
+!schism/data/raw/.gitkeep
+schism/data/processed/*
+!schism/data/processed/.gitkeep
+
+# Runtime outputs — never commit generated artifacts or gate results
+schism/outputs/stress_test/*
+!schism/outputs/stress_test/.gitkeep
+schism/outputs/*.json
+schism/outputs/*.pkl
+schism/outputs/*.npy
+schism/outputs/*.npz
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Planning & spec docs (not part of the codebase)
+SCHISM_V2_PLAN.md
+SCHISM_V2_SUMMARY.md
+Document/
+
+# Legacy
+Legacy (SchismV1)/
+
+# Claude
+.claude-memory-seed/
+CLAUDE.md

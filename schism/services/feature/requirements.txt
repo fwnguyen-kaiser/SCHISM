@@ -1,0 +1,3 @@
+# schism-shared installed separately: pip install -e /app/shared (Dockerfile) or pip install -e schism/shared (local)
+numpy>=2.4
+pandas>=3.0

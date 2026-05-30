@@ -1,0 +1,4 @@
+# schism-shared installed separately: pip install -e /app/shared (Dockerfile) or pip install -e schism/shared (local)
+numpy>=2.4
+scipy>=1.17
+statsmodels>=0.14

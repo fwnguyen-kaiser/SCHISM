@@ -1,0 +1,5 @@
+# schism-shared installed separately: pip install -e /app/shared (Dockerfile) or pip install -e schism/shared (local)
+fastapi>=0.115
+uvicorn[standard]>=0.30
+asyncpg>=0.29
+sqlalchemy[asyncio]>=2.0
