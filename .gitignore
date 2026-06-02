@@ -30,6 +30,9 @@ Document/
 # Legacy
 Legacy (SchismV1)/
 
+# UI — placeholder only, out of scope for backend
+schism_ui/
+
 # Claude
 .claude-memory-seed/
 CLAUDE.md

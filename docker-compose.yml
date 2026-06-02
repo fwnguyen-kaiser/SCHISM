@@ -1,0 +1,122 @@
+services:
+
+  # ---------------------------------------------------------------------------
+  # Infrastructure
+  # ---------------------------------------------------------------------------
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER:     schism
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB:       schism
+    volumes:
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U schism -d schism"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server /etc/redis/redis.conf
+    volumes:
+      - ./infra/redis/redis.conf:/etc/redis/redis.conf:ro
+      - redisdata:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Application services (pending implementation)
+  # ---------------------------------------------------------------------------
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: schism/services/ingestion/Dockerfile
+    env_file: .env
+    environment:
+      REDIS_URL:        redis://redis:6379
+      RAW_DIR:          /app/data/raw
+    volumes:
+      - ./schism/data/raw:/app/data/raw
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  feature:
+    build:
+      context: .
+      dockerfile: schism/services/feature/Dockerfile
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ./schism/data/raw:/app/data/raw:ro
+      - ./schism/data/processed:/app/data/processed
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  model:
+    build:
+      context: .
+      dockerfile: schism/services/model/Dockerfile
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ./schism/data/processed:/app/data/processed:ro
+      - ./schism/outputs:/app/outputs
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  stress_test:
+    build:
+      context: .
+      dockerfile: schism/services/stress_test/Dockerfile
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ./schism/outputs:/app/outputs
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: schism/services/api/Dockerfile
+    env_file: .env
+    environment:
+      REDIS_URL:    redis://redis:6379
+      DATABASE_URL: postgresql+asyncpg://schism:${POSTGRES_PASSWORD}@postgres:5432/schism
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:

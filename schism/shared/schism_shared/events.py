@@ -64,7 +64,9 @@ class GateResult(BaseModel):
 
     timestamp: datetime
     fold_id: str
-    passed: bool                    # True only if all 16 gates pass
-    gates: dict[str, bool]          # per-gate pass/fail (16 entries)
+    # Computed by stress_test: all(gates.values()). Do NOT include when inserting
+    # into Postgres — gate_results.passed is a GENERATED column derived from gates JSONB.
+    passed: bool
+    gates: dict[str, bool]          # per-gate pass/fail; keys match tier definitions
     advisories: dict[str, float]    # advisory metric values — never gates
     details: dict                   # per-gate raw values and metadata for diagnostics
